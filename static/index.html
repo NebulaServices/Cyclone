@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <style>
+      body {
+        background-color: white;
+      }
+
+      .main {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 75%;
+      }
+    </style>
+  </head>
+  
+  <body>
+    <div class="main">
+      <img src="/cyclone.svg" alt="Cyclone"></img>
+      <h1>Cyclone Public Beta</h1>
+      <script>
+      function go() {
+                    var input = document.querySelector('input');
+                    if (input.value) {
+                        var url = input.value;
+                        if (!(url.startsWith('https://') && url.startsWith('http://'))){
+                          url = 'google.com/search?q='+url;
+                        }
+                        window.open(location.origin+'/service/'+url);
+                    } else {
+                        alert('Please provide a link. It does not require https://.');
+                    }
+                }
+
+      </script>
+      <input type="url" onkeydown="if(event.key==='Enter') go()" />
+    </div>
+
+  </body>
+</html>

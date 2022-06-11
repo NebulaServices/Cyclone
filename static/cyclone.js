@@ -3,7 +3,6 @@ class Cyclone {
     this.tmp = location.pathname.split('/service')[1]
 
     this.tmp = this.tmp.substring(1, this.tmp.length);
-    let re = /(http(s|):)/g
 
     //if (this.tmp.match(re)) {
     this.tmp = this.tmp.replace("http://", '')
@@ -17,17 +16,17 @@ class Cyclone {
     this.url = new URL(document._location.href);
 
     this.bareEndpoint = location.host + "/service";
+    this.prefix = "/service";
 
     if (this.url.pathname == "/") {
       this.paths = ['/']
     } else {
       this.paths = this.url.pathname.split('/')
     }
+    
     this.host = 'https://' + this.url.host
 
     this.targetAttrs = ['href', 'src', 'action', 'srcdoc', 'srcset'];
-
-    console.log("Cyclone Injected with paths of:", this.paths, this.url.pathname)
 
     /*const LocationHandler = {
       get(target, prop, reciver) {
@@ -58,7 +57,7 @@ class Cyclone {
         }
         let file = link.substr(link.indexOf('.') + 1 + offset, link.length)
 
-        rewritten = this.url.hostname + file
+        rewritten = this.url.hostname + "/" + file
       } else {
         if (link.startsWith('/')) {
           rewritten = this.host + link
@@ -87,10 +86,10 @@ class Cyclone {
   rewriteSrcset(sample) {
     return sample.split(',').map(e => {
       return (e.split(' ').map(a => {
-        if (a.startsWith('http') || (a.startsWith('/') && !a.startsWith(this.prefix))) {
+        if (a.startsWith('/') || a.startsWith('https://') || a.startsWith('http://')) {
           var url = this.rewriteUrl(a)
+          return a.replace(a, url)
         }
-        return a.replace(a, (url || a))
       }).join(' '))
     }).join(',')
   }
@@ -174,7 +173,6 @@ class HTMLRewriter extends Cyclone {
   }
 }
 
-
 const cyclone = new Cyclone();
 
 const htmlRewriter = new HTMLRewriter();
@@ -212,6 +210,19 @@ Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
   }
 })
 
+var CWOriginal = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.prototype, 'contentWindow')
+
+Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
+  get() {
+    var iWindow = CWOriginal.get.call(this)
+    cyclone.rewriteiFrame(iWindow)
+
+    return iWindow
+  },
+  set() {
+    return false;
+  }
+})
 
 const open = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function(method, url, ...rest) {
@@ -236,6 +247,13 @@ window.history.pushState = CycloneStates
 window.history.replaceState = CycloneStates
 history.pushState = CycloneStates
 history.replaceState = CycloneStates
+
+/*
+const beacon = navigator.sendBeacon;
+navigator.sendBeacon = (source, data) => {
+  var src = cyclone.rewriteUrl(source);
+  beacon(source, data);
+}*/
 
 const OriginalWebsocket = window.WebSocket
 const ProxiedWebSocket = function() {
@@ -277,13 +295,8 @@ function openNewTab(url, target, features) {
 }
 window.open = openNewTab
 
-htmlRewriter.rewriteDocument();
-setInterval(function() {
-  htmlRewriter.rewriteDocument();
-}, 10000)
-
 //For intercepting all requests
-if (!document.serviceWorkerRegistered) {
+if (!document.serviceWorkerRegistered == false) {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register(location.origin + '/sw.js').then(function(registration) {
@@ -295,4 +308,22 @@ if (!document.serviceWorkerRegistered) {
   }
   document.serviceWorkerRegistered = true
 }
+htmlRewriter.rewriteDocument();
 
+const callback = async function(mutationList, observer) {
+  for (const mutation of mutationList) {
+    var node = mutation.target;
+    htmlRewriter.rewriteElement(node);
+  }
+};
+
+const observer = new MutationObserver(callback);
+observer.observe(document, {
+	childList: true,
+	subtree: true
+});
+
+
+/*setInterval(function() {
+  htmlRewriter.rewriteDocument();
+}, 5000)*/

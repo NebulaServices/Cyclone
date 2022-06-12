@@ -3,6 +3,7 @@ class Cyclone {
     this.tmp = location.pathname.split('/service')[1]
 
     this.tmp = this.tmp.substring(1, this.tmp.length);
+    let re = /(http(s|):)/g
 
     //if (this.tmp.match(re)) {
     this.tmp = this.tmp.replace("http://", '')
@@ -16,17 +17,17 @@ class Cyclone {
     this.url = new URL(document._location.href);
 
     this.bareEndpoint = location.host + "/service";
-    this.prefix = "/service";
 
     if (this.url.pathname == "/") {
       this.paths = ['/']
     } else {
       this.paths = this.url.pathname.split('/')
     }
-    
     this.host = 'https://' + this.url.host
 
     this.targetAttrs = ['href', 'src', 'action', 'srcdoc', 'srcset'];
+
+    console.log("Cyclone Injected with paths of:", this.paths, this.url.pathname)
 
     /*const LocationHandler = {
       get(target, prop, reciver) {
@@ -36,7 +37,6 @@ class Cyclone {
         return 'hi'
       }
     }
-
     document._location = new Proxy(LocationHandler, loc)*/
   }
 
@@ -57,7 +57,7 @@ class Cyclone {
         }
         let file = link.substr(link.indexOf('.') + 1 + offset, link.length)
 
-        rewritten = this.url.hostname + "/" + file
+        rewritten = this.url.hostname + file
       } else {
         if (link.startsWith('/')) {
           rewritten = this.host + link
@@ -86,22 +86,57 @@ class Cyclone {
   rewriteSrcset(sample) {
     return sample.split(',').map(e => {
       return (e.split(' ').map(a => {
-        if (a.startsWith('/') || a.startsWith('https://') || a.startsWith('http://')) {
+        if (a.startsWith('http') || (a.startsWith('/') && !a.startsWith(this.prefix))) {
           var url = this.rewriteUrl(a)
-          return a.replace(a, url)
         }
+        return a.replace(a, (url || a))
       }).join(' '))
     }).join(',')
   }
 }
 
-function rewriteJavascript(js) {
-  var javascript = js.replace('window.location', 'document._dlocation')
-  javascript = javascript.replace('document.location', 'document._dlocation')
-  javascript = javascript.replace('location.', 'document._location.')
-  return javascript
+// Rewriting of data types
+
+// CSS
+class CSSRewriter extends Cyclone {
+  rewriteCSS(tag) {
+    var styles = window.getComputedStyle(tag)
+    var _values = styles['_values']
+
+    var prop = styles.getPropertyValue('background-image')
+    var name = "background-image"
+
+    if (prop == "") {
+      if (!styles.getPropertyValue('background') == "") {
+        prop = styles.getPropertyValue('background')
+        name = "background"
+      }
+    }
+
+    if (prop.includes("url(")) {
+      var start = prop.indexOf('url(') + 4
+      var end = prop.indexOf(')') - 4
+
+      var url = prop.substring(start, end)
+      url = this.rewriteUrl(url)
+      console.log(name)
+      tag.style[name] = url
+    }
+  }
 }
 
+// JS
+
+class JavaScriptRewriter extends Cyclone {
+  rewriteJavascript(js) {
+    var javascript = js.replace('window.location', 'document._dlocation')
+    javascript = javascript.replace('document.location', 'document._dlocation')
+    javascript = javascript.replace('location.', 'document._location.')
+    return javascript
+  }
+}
+
+// HTML
 class HTMLRewriter extends Cyclone {
   rewriteElement(element) {
     var targetAttrs = this.targetAttrs;
@@ -119,6 +154,7 @@ class HTMLRewriter extends Cyclone {
         name: attr,
         value: element.getAttribute('data-origin-' + attr) || element.getAttribute(attr)
       }
+
       if (data.value) {
         elementAttributes.push(data);
       }
@@ -133,8 +169,15 @@ class HTMLRewriter extends Cyclone {
       }
 
       if (element.tagName == "script") {
-        element.innerHTML = rewriteJavascript(element.innerHTML);
+        if (!element.getAttribute('src')) {
+          var jsRewrite = new JavaScriptRewriter();
+          element.innerHTML = jsRewrite.rewriteJavascript(element.innerHTML)
+        }
       }
+
+      // Css
+      var cssRewrite = new CSSRewriter();
+      cssRewrite.rewriteCSS(element)
     }
 
     for (var i = 0; i < elementAttributes.length; i++) {
@@ -210,22 +253,9 @@ Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
   }
 })
 
-var CWOriginal = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.prototype, 'contentWindow')
-
-Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
-  get() {
-    var iWindow = CWOriginal.get.call(this)
-    cyclone.rewriteiFrame(iWindow)
-
-    return iWindow
-  },
-  set() {
-    return false;
-  }
-})
 
 const open = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+XMLHttpRequest.prototype.open = function (method, url, ...rest) {
   url = cyclone.rewriteUrl(url)
 
   return open.call(this, method, url, ...rest);
@@ -248,22 +278,15 @@ window.history.replaceState = CycloneStates
 history.pushState = CycloneStates
 history.replaceState = CycloneStates
 
-/*
-const beacon = navigator.sendBeacon;
-navigator.sendBeacon = (source, data) => {
-  var src = cyclone.rewriteUrl(source);
-  beacon(source, data);
-}*/
-
 const OriginalWebsocket = window.WebSocket
-const ProxiedWebSocket = function() {
+const ProxiedWebSocket = function () {
   const ws = new OriginalWebsocket(...arguments)
 
   const originalAddEventListener = ws.addEventListener
-  const proxiedAddEventListener = function() {
+  const proxiedAddEventListener = function () {
     if (arguments[0] === "message") {
       const cb = arguments[1]
-      arguments[1] = function() {
+      arguments[1] = function () {
         var origin = arguments[0].origin
         arguments[0].origin = cyclone.rewriteUrl(origin);
 
@@ -289,41 +312,43 @@ const ProxiedWebSocket = function() {
 window.WebSocket = ProxiedWebSocket;
 
 const nwtb = window.open
+
 function openNewTab(url, target, features) {
   url = cyclone.rewriteUrl(url)
   nwtb(url, target, features)
 }
 window.open = openNewTab
+/* 
+ setInterval(function() {
+   htmlRewriter.rewriteDocument();
+ }, 10000)
+ */
 
+htmlRewriter.rewriteDocument();
+
+let mutationE = new MutationObserver((mutationList, observer) => {
+  for (const mutation of mutationList) {
+    mutation.addedNodes.forEach(node => {
+      if (node.innerHTML != '<script preload="" type="module" src="https://localhost:443/cyclone.js"></script>') {
+        htmlRewriter.rewriteElement(node)
+      }
+    });
+
+  }
+}).observe(document, {
+  childList: true,
+  subtree: true
+})
 //For intercepting all requests
-if (!document.serviceWorkerRegistered == false) {
+if (!document.serviceWorkerRegistered) {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register(location.origin + '/sw.js').then(function(registration) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register(location.origin + '/cySw.js').then(function (registration) {
         console.log('Service worker registered with scope: ', registration.scope);
-      }, function(err) {
+      }, function (err) {
         console.log('ServiceWorker registration failed: ', err);
       });
     });
   }
   document.serviceWorkerRegistered = true
 }
-htmlRewriter.rewriteDocument();
-
-const callback = async function(mutationList, observer) {
-  for (const mutation of mutationList) {
-    var node = mutation.target;
-    htmlRewriter.rewriteElement(node);
-  }
-};
-
-const observer = new MutationObserver(callback);
-observer.observe(document, {
-	childList: true,
-	subtree: true
-});
-
-
-/*setInterval(function() {
-  htmlRewriter.rewriteDocument();
-}, 5000)*/

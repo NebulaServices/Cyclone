@@ -1,6 +1,6 @@
 # ⚡ Cyclone ⚡
 
-  Helping make an unrestrained internet with seemless network speeds.
+  Helping make an unrestricted internet with seemless network speeds.
 
 Technologies used:
 

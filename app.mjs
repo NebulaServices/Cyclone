@@ -1,6 +1,9 @@
-const http = require('http');
-const bare = require('./static/customBare.js');
-const fs = require('fs');
+import http from 'http';
+import * as fs from 'fs';
+import * as bare from './static/customBare.js';
+import path from 'path';
+
+const __dirname = process.cwd();
 
 const port = 8080;
 

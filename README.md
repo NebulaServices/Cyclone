@@ -1,4 +1,4 @@
-# ⚡ Cyclone ⚡
+# ⚡ Cyclone (Using CJS) ⚡
 
   Helping make an unrestricted internet with seemless network speeds.
 

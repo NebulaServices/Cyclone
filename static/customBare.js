@@ -1,7 +1,5 @@
-import fs from 'fs';
-import fetch from 'node-fetch';
-import { URL } from 'url';
-import path from 'path';
+const fs = require('fs');
+const fetch = require('node-fetch');
 
 const config = {
   prefix: "/service",
@@ -86,6 +84,13 @@ async function route(req, res) {
 
     fetchBare(url, res, req);
 
+  } else if (path.startsWith('/cyclone.js')) {
+    var cyclone = fs.readFileSync(__dirname + '/static/cyclone.js', 'utf8');
+    res.writeHead(200, "Sucess", {
+      "content-type": "application/javascript"
+    })
+    res.write(cyclone);
+    res.end();
   }
 }
 

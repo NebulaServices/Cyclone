@@ -44,24 +44,57 @@ body {
     cursor: pointer;
 }
 
-.url {
+.wrap {
+    display: flex;
+    align-items: center;
+    margin-left: 3em;
+    margin-right: 5em;
+    width: 40%;
+    height: 46px;
     background-color: #061328;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.wrap:hover {
+    background: #0a1c39;
+    color: #3a78db;
+}
+
+.refresh {
+    width: 50px;
+    height: 32px;
+    transform: rotate(180deg);
+    transition: 300ms ease-in-out;
+}
+
+.btnREF {
+    width: 50px;
+    height: 100%;
+    display: grid;
+    align-items: center;
+    box-shadow: 0 0 9px 11px #061328;
+    z-index: 1;
+}
+
+.wrap:hover .btnREF {
+    box-shadow: 0 0 9px 11px #0a1c39;
+}
+
+.btnREF:hover .refresh {
+    transform: rotate(528deg);
+}
+
+.url {
     border: none;
     height: 46px;
-    margin-left: 3em;
-    width: 40%;
-    margin-right: 5em;
-    border-radius: 12px;
-    padding-left: 12px;
+    width: 100%;
+    /*! padding-left: 12px; */
     color: #3163b3;
     font-family: pro;
     font-size: 18px;
     text-align: center;
-}
-
-.url:hover {
-    background: #0a1c39;
-    color: #3a78db;
+    background: transparent;
 }
 
 .url:focus-visible {

@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyclone Modern</title>
+    <title>Cyclone</title>
     <meta name="theme-color" content="#03ff65">
-    <meta name="description" content="Home of Cyclone Modern with &#10084; from Nebula">
+    <meta name="description" content="Home of Cyclone with &#10084; from Nebula">
     <meta property="og:image" content="cyclone2.png">
     <link rel="shortcut icon" href="cyclone2.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
@@ -54,7 +54,15 @@
 <body>
     <div class="nav">
         <img src="cyclone2.png" class="logo" onclick="location.reload(); document.querySelector('iframe').src = 'home.html'">
-        <input type="url" class="url" placeholder="snazzy link">
+        <div class="wrap">
+            <a class="btnREF" onclick="location.reload();">
+                <svg xmlns="http://www.w3.org/2000/svg" class="refresh" viewBox="0 0 24 24" stroke-width="2" stroke="#3163b3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
+                </svg>
+            </a>
+            <input type="url" class="url" placeholder="snazzy link">
+        </div>
     </div>
     <main>
         <iframe src="home.html" frameborder="0"></iframe>

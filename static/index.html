@@ -1,5 +1,12 @@
 <html>
   <head>
+    <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "ccuei4d6qw");
+</script>
     <style>
       body {
         background-color: white;
@@ -12,10 +19,17 @@
         width: 75%;
       }
     </style>
+    <script>
+      const xor = {
+        encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join("")),
+        decode: (url) => decodeURIComponent(url.split("?")[0]).split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join("") + (url.split("?").slice(1).length ? "?" + url.split("?").slice(1).join("?") : "")
+      }
+    </script>
   </head>
   
   <body>
     <div class="main">
+      <center>
       <img src="/cyclone.svg" alt="Cyclone"></img>
       <h1>Cyclone Public Beta</h1>
       <script>
@@ -23,9 +37,11 @@
                     var input = document.querySelector('input');
                     if (input.value) {
                         var url = input.value;
-                        if (!(url.startsWith('https://') && url.startsWith('http://'))){
-                          url = 'google.com/search?q='+url;
+                        if (!(url.startsWith('https://') || url.startsWith('http://'))){
+                          url = 'https://google.com/search?q='+url;
                         }
+                        //url = xor.encode(url);
+                      
                         window.open(location.origin+'/service/'+url);
                     } else {
                         alert('Please provide a link. It does not require https://.');
@@ -34,6 +50,8 @@
 
       </script>
       <input type="url" onkeydown="if(event.key==='Enter') go()" />
+      <a href="https://discord.gg/3EbwtNBF">Discord</a>
+      </center>
     </div>
 
   </body>

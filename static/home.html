@@ -1,149 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Cyclone Home</title>
+    <title>Cyclone Modern</title>
+    <meta name="theme-color" content="#03ff65">
+    <meta name="description" content="Home of Cyclone Web Proxy with &#10084; from Nebula">
+    <meta property="og:image" content="cyclone2.png">
+    <link rel="shortcut icon" href="cyclone2.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <script src="/nogg.js"></script>
     <script>
+        // Will be used soon
         const xor = {
-          encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join("")),
-          decode: (url) => decodeURIComponent(url.split("?")[0]).split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join("") + (url.split("?").slice(1).length ? "?" + url.split("?").slice(1).join("?") : "")
+            encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String
+                .fromCharCode(char.charCodeAt() ^ 2) : char).join("")),
+            decode: (url) => decodeURIComponent(url.split("?")[0]).split("").map((char, ind) => ind % 2 ? String
+                .fromCharCode(char.charCodeAt(0) ^ 2) : char).join("") + (url.split("?").slice(1).length ? "?" +
+                url.split("?").slice(1).join("?") : "")
+        }
+
+        function isValidURL(str) {
+            var regexp =
+                /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+            if (regexp.test(str)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        window.go = function(input) {
+            if (input.value) {
+                var url = input.value;
+                if (!isValidURL(url)) {
+                    url = 'https://google.com/search?q=' + url;
+                }
+
+                var iframe = document.querySelector('iframe');
+                iframe.src = '/service/'+url
+
+            } else {
+                alert('Please provide a link. It does not require https://.');
+            }
         }
     </script>
-    <style>
-        @font-face {
-            font-family: pro;
-            src: url(Product.ttf);
-        }
-
-        @keyframes resizeIN {
-            0% {
-                transform: translateY(-3em);
-                height: 0;
-            }
-            50% {
-                height: 25em;
-            }
-            100% {
-                transform: translateY(0em);
-                height: 20em;
-            }
-        }
-
-        @keyframes rotating {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes shadow {
-            0% {
-                background-color:#3f89ff2e;
-                width: 60px;
-                height: 60px;
-                top: 15%;
-            }
-            50% {
-                background-color:#214dff6e;
-                width: 25px;
-                height: 25px;
-                top: 21%;
-            }
-            100% {
-                background-color: #3f89ff2e;
-                width: 60px;
-                height: 60px;
-                top: 15%;
-            }
-        }
-
-        html {
-            height: 100%;
-            margin: 0;
-        }
-
-        body {
-            display: grid;
-            height: 100%;
-            margin: 0;
-            justify-items: center;
-            align-items: center;
-        }
-
-        .home {
-            height: 0;
-            display: grid;
-            justify-items: center;
-            animation: resizeIN 500ms;
-            animation-fill-mode: forwards;
-            animation-iteration-count: 1;
-        }
-
-        .logo {
-            width: 10em;
-            -webkit-animation: rotating 2s linear infinite;
-            -moz-animation: rotating 2s linear infinite;
-            -ms-animation: rotating 2s linear infinite;
-            -o-animation: rotating 2s linear infinite;
-            animation: rotating 2s linear infinite;
-        }
-
-        .url {
-            font-family: pro;
-            border: none;
-            background: #061328;
-            color: #3163b3;
-            height: 42px;
-            width: 14em;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 18px;
-            transition: 300ms ease;
-        }
-
-        .url:hover {
-            background: #0a1c39;
-            color: #3a78db;
-        }
-
-        .url:focus-visible {
-            outline: none;
-        }
-
-        .title {
-            color: #3163b3;
-            font-family: pro;
-            display: flex;
-            transition: 300ms ease-in-out;
-        }
-
-        .dot {
-            border-radius: 50px;
-            width: 60px;
-            height: 60px;
-            animation: shadow 1.9s ease-in-out infinite;
-            position: absolute;
-            top: 21%;
-        }
-
-        .space {
-            margin-right: 6px;
-        }
-    </style>
 </head>
-    <body>
-        <div class="home">
-            <img src="cyclone2.png" class="logo">
-            <h2 class="title">Cyclone</h2>
-            <div class="dot"></div>
-            <input type="url" class="url" placeholder="snazzy link">
-        </div>
-        <script>
-            
-        </script>
-    </body>
+
+<body>
+    <div class="nav">
+        <img src="cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html'">
+        <input type="url" class="url" placeholder="snazzy link">
+    </div>
+    <main>
+        <iframe src="home.html" frameborder="0"></iframe>
+    </main>
+    <script>
+        document.querySelectorAll(".url").forEach(a=>{
+          a.addEventListener("keydown", (event) => {
+            if (event.key === 'Enter') window.go(a);
+          });
+        })
+    </script>
+</body>
+
 </html>

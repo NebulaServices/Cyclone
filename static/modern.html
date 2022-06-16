@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyclone Modern</title>
     <meta name="theme-color" content="#03ff65">
-    <meta name="description" content="Home of Cyclone Modern with &#10084; from Nebula">
+    <meta name="description" content="Home of Cyclone Web Proxy with &#10084; from Nebula">
     <meta property="og:image" content="cyclone2.png">
     <link rel="shortcut icon" href="cyclone2.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
@@ -32,9 +32,7 @@
             }
         }
         
-        function go() {
-            var input = document.querySelector('input');
-
+        window.go = function(input) {
             if (input.value) {
                 var url = input.value;
                 if (!isValidURL(url)) {
@@ -53,7 +51,7 @@
 
 <body>
     <div class="nav">
-        <img src="cyclone2.png" class="logo" onclick="location.reload(); document.querySelector('iframe').src = 'home.html'">
+        <img src="cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html'">
         <input type="url" class="url" placeholder="snazzy link">
     </div>
     <main>
@@ -62,7 +60,7 @@
     <script>
         document.querySelectorAll(".url").forEach(a=>{
           a.addEventListener("keydown", (event) => {
-            if (event.key === 'Enter') go();
+            if (event.key === 'Enter') window.go(a);
           });
         })
     </script>

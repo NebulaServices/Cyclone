@@ -5,7 +5,6 @@ import nodeStatic from 'node-static';
 
 const serve = new nodeStatic.Server('./static', {
   cache: 0,
-  indexFile: 'modern.html'
 });
 
 const __dirname = process.cwd();

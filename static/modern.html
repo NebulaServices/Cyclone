@@ -31,26 +31,18 @@
                 return false;
             }
         }
-
-        var ab = window.prompt("Do You Want To Open Stealth Mode? (Y/N)").trim().toLocaleLowerCase();
-        if (ab == "y") {
-            window.proxyMethod = "stealth";
-        } else {
-            window.proxyMethod = "normal";
-        }
-
+        
         function go() {
             var input = document.querySelector('input');
+
             if (input.value) {
                 var url = input.value;
                 if (!isValidURL(url)) {
                     url = 'https://google.com/search?q=' + url;
                 }
-                if (window.proxyMethod == "stealth") {
-                    window.NoGG(url);
-                } else {
-                    window.open(location.origin + '/service/' + url);
-                }
+
+                var iframe = document.querySelector('iframe');
+                iframe.src = '/service/'+url
 
             } else {
                 alert('Please provide a link. It does not require https://.');
@@ -68,9 +60,11 @@
         <iframe src="home.html" frameborder="0"></iframe>
     </main>
     <script>
-        document.querySelector(".url").addEventListener("keydown", (event) => {
+        document.querySelectorAll(".url").forEach(a=>{
+          a.addEventListener("keydown", (event) => {
             if (event.key === 'Enter') go();
-        });
+          });
+        })
     </script>
 </body>
 

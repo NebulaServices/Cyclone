@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyclone Modern</title>
+    <meta name="theme-color" content="#03ff65">
+    <meta name="description" content="Home of Cyclone Modern with &#10084; from Nebula">
+    <meta property="og:image" content="cyclone2.png">
+    <link rel="shortcut icon" href="cyclone2.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const xor = {
+          encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join("")),
+          decode: (url) => decodeURIComponent(url.split("?")[0]).split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join("") + (url.split("?").slice(1).length ? "?" + url.split("?").slice(1).join("?") : "")
+        }
+    </script>
+</head>
+    <body>
+        <div class="nav">
+            <img src="cyclone2.png" class="logo" onclick="location.reload();">
+            <input type="url" class="url" placeholder="snazzy link">
+        </div>
+        <main>
+            <iframe src="home.html" frameborder="0"></iframe>
+        </main>
+        <script>
+            document.querySelector(".url").addEventListener("keydown", (event) => {
+                if(event.key==='Enter') go();
+            });
+            function go() {
+                var input = document.querySelector('.url');
+                if (input.value) {
+                    var url = input.value;
+                    if (!(url.startsWith('https://') || url.startsWith('http://'))){
+                      url = 'https://google.com/search?q='+url;
+                    }
+                    window.open(location.origin+'/service/'+url);
+                } else {
+                    alert('Please provide a link. It does not require https://.');
+                }
+            }
+            </script>
+    </body>
+</html>

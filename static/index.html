@@ -8,15 +8,75 @@
     })(window, document, "clarity", "script", "ccuei4d6qw");
 </script>
     <style>
+      @font-face {
+        font-family: pro;
+        src: url(Product.ttf);
+      }
+      @font-face {
+        font-family: metrop;
+        src: url(metropolis-extra-bold.otf);
+      }
+      html {
+        height: 100%;
+        width: 100%;
+      }
+
       body {
+        display: grid;
+        height: 100%;
         background-color: white;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        font-family: pro;
       }
 
       .main {
-        display: block;
+        display: grid;
         margin-left: auto;
         margin-right: auto;
-        width: 75%;
+        width: max-content;
+        justify-items: center;
+      }
+
+      .title {
+        font-family: metrop;
+        user-select: none;
+      }
+
+      .inp {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+      }
+
+      input::selection {
+        background: #00000057;
+        color: #fff;
+      }
+
+      input {
+        background-color: #dbdbdb;
+        border: none;
+        border-radius: 3px;
+        padding: 4px 5px;
+        color: #717171;
+        height: 24px;
+        font-size: 13px;
+        transition: .5s ease;
+      }
+
+      input:focus-visible {
+        border: none;
+        outline: none;
+        border-radius: 7px;
+        height: 32px;
+      }
+
+      a {
+        text-decoration: none;
+        color: #686868;
+        user-select: none;
       }
     </style>
     <script>
@@ -29,9 +89,8 @@
   
   <body>
     <div class="main">
-      <center>
-      <img src="/cyclone.svg" alt="Cyclone"></img>
-      <h1>Cyclone Public Beta</h1>
+      <img src="cyclone.png" alt="Cyclone"></img>
+      <h1 class="title">Cyclone Public Beta</h1>
       <script>
       function go() {
                     var input = document.querySelector('input');
@@ -49,9 +108,10 @@
                 }
 
       </script>
-      <input type="url" onkeydown="if(event.key==='Enter') go()" />
-      <a href="https://discord.gg/3EbwtNBF">Discord</a>
-      </center>
+      <div class="inp">
+        <input type="url" placeholder="some snazzy link" onkeydown="if(event.key==='Enter') go()" />
+        <a href="https://discord.gg/3EbwtNBF">Discord</a>
+      </div>
     </div>
 
   </body>

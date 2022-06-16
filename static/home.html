@@ -138,26 +138,12 @@
     <body>
         <div class="home">
             <img src="cyclone2.png" class="logo">
-            <h2 class="title">Cyclone Modern</h2>
+            <h2 class="title">Cyclone</h2>
             <div class="dot"></div>
             <input type="url" class="url" placeholder="snazzy link">
         </div>
         <script>
-            document.querySelector(".url").addEventListener("keydown", (event) => {
-                if(event.key==='Enter') go();
-            });
-            function go() {
-                var input = document.querySelector('input');
-                if (input.value) {
-                    var url = input.value;
-                    if (!(url.startsWith('https://') || url.startsWith('http://'))){
-                      url = 'https://google.com/search?q='+url;
-                    }
-                    window.open(location.origin+'/service/'+url);
-                } else {
-                    alert('Please provide a link. It does not require https://.');
-                }
-            }
-            </script>
+            
+        </script>
     </body>
 </html>

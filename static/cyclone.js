@@ -1,11 +1,14 @@
+const config = {
+  
+}
+
 class Cyclone {
   constructor() {
     this.tmp = location.pathname.split('/service')[1]
-
+    
     this.tmp = this.tmp.substring(1, this.tmp.length);
-    let re = /(http(s|):)/g
+    let re = /(\b([A-Za-z0-9-]+)\b)/
 
-    //if (this.tmp.match(re)) {
     this.tmp = this.tmp.replace("http://", '')
     this.tmp = this.tmp.replace("https://", '')
     this.tmp = this.tmp.replace("http:/", '')
@@ -13,10 +16,12 @@ class Cyclone {
     this.tmp = location.protocol + "//" + this.tmp
 
     document._location = new URL(this.tmp);
-
+    
+    
     this.url = new URL(document._location.href);
 
-    this.bareEndpoint = location.host + "/service";
+    this.prefix = location.pathname.split('/')[1]
+    this.bareEndpoint = location.host + "/" + this.prefix 
 
     if (this.url.pathname == "/") {
       this.paths = ['/']
@@ -27,8 +32,11 @@ class Cyclone {
 
     this.targetAttrs = ['href', 'src', 'action', 'srcdoc', 'srcset'];
 
-    console.log("Cyclone Injected with paths of:", this.paths, this.url.pathname)
-
+    if (!document.cycloneInjected) {
+      console.log("Cyclone Injected with paths of:", this.paths, this.url.pathname)
+      document.cycloneInjected = true
+    }
+    
     /*const LocationHandler = {
       get(target, prop, reciver) {
         return loc[prop]
@@ -41,6 +49,10 @@ class Cyclone {
   }
 
   rewriteUrl(link) {
+    if (!link) {
+      link = "";
+    }
+    
     var rewritten;
 
     if (link.startsWith('https://') || link.startsWith('http://') || link.startsWith('//')) {
@@ -75,6 +87,7 @@ class Cyclone {
       }
     }
 
+    
     if (needstowrite) {
       rewritten = location.protocol + '//' + this.bareEndpoint + '/' + rewritten
       return rewritten;
@@ -87,7 +100,7 @@ class Cyclone {
     return sample.split(',').map(e => {
       return (e.split(' ').map(a => {
         if (a.startsWith('http') || (a.startsWith('/') && !a.startsWith(this.prefix))) {
-          var url = this.rewriteUrl(a)
+          var url = this.rewriteUrl(url);
         }
         return a.replace(a, (url || a))
       }).join(' '))
@@ -255,38 +268,29 @@ Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
 
 
 const open = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+XMLHttpRequest.prototype.open = function(method, url, ...rest) {
   url = cyclone.rewriteUrl(url)
 
   return open.call(this, method, url, ...rest);
 };
 
+/*
 var oPush = window.history.pushState;
-
-function CycloneStates(obj, title, path) {
-  if (path.startsWith('/service/')) {
-    return;
-  } else {
-    var url = cyclone.rewriteUrl(path)
-
-    oPush.apply(this, [obj, title, url])
-  }
-}
 
 window.history.pushState = CycloneStates
 window.history.replaceState = CycloneStates
 history.pushState = CycloneStates
-history.replaceState = CycloneStates
+history.replaceState = CycloneStates */
 
 const OriginalWebsocket = window.WebSocket
-const ProxiedWebSocket = function () {
+const ProxiedWebSocket = function() {
   const ws = new OriginalWebsocket(...arguments)
 
   const originalAddEventListener = ws.addEventListener
-  const proxiedAddEventListener = function () {
+  const proxiedAddEventListener = function() {
     if (arguments[0] === "message") {
       const cb = arguments[1]
-      arguments[1] = function () {
+      arguments[1] = function() {
         var origin = arguments[0].origin
         arguments[0].origin = cyclone.rewriteUrl(origin);
 
@@ -339,13 +343,14 @@ let mutationE = new MutationObserver((mutationList, observer) => {
   childList: true,
   subtree: true
 })
+
 //For intercepting all requests
 if (!document.serviceWorkerRegistered) {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register(location.origin + '/cySw.js').then(function (registration) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register(location.origin + '/cySw.js').then(function(registration) {
         console.log('Service worker registered with scope: ', registration.scope);
-      }, function (err) {
+      }, function(err) {
         console.log('ServiceWorker registration failed: ', err);
       });
     });

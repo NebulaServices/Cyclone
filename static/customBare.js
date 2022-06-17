@@ -4,7 +4,17 @@ import fs from 'fs';
 
 const config = {
   prefix: "/service",
-  port: null
+  requireSSL: true, // Requires SSL?
+  proxy: {
+    host: "162.159.134.234",
+    port: "443"
+  } //HTTP Proxy
+}
+
+if (config.requireSSL) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "1";
+} else {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
 
 function rewriteJavascript(js) {
@@ -18,7 +28,7 @@ function insertScript(html, origin) {
   var res = `<!DOCTYPE html>
 <html>
 <head>
-<script preload type="module" src="/cyclone.js"></script>
+<script preload type="module" src="/cyclone/cyclone.js"></script>
 </head>
 <body>
 ${html}
@@ -41,6 +51,7 @@ async function fetchBare(url, res, req) {
     }
 
     var request = await fetch(url.href, options);
+
     var contentType = request.headers.get('content-type') || 'application/javascript'
     var output = null;
 

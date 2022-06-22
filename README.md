@@ -1,6 +1,6 @@
 # ⚡ Cyclone ⚡
 
-<img src="https://ant-network.net/cyclone2.png" width="150px"></img><br>
+<img src="https://ant-network.net/images/cyclone2.png" width="150px"></img><br>
 
   <p style="font-size:12px;">Helping make an unrestricted internet with seemless network speeds.</p>
 

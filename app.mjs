@@ -1,6 +1,6 @@
 import http from 'http';
 import * as fs from 'fs';
-import * as bare from './static/customBare.mjs';
+import * as bare from './static/js/customBare.mjs';
 import nodeStatic from 'node-static';
 
 const serve = new nodeStatic.Server('./static', {
@@ -9,7 +9,7 @@ const serve = new nodeStatic.Server('./static', {
 
 const __dirname = process.cwd();
 
-const port = 8080;
+const port = process.env.PORT || 5000 ;
 
 const requestListener = function(req, res) {
   if (bare.isBare(req, res)) {
@@ -19,5 +19,19 @@ const requestListener = function(req, res) {
   }
 }
 
-const server = http.createServer(requestListener);
+const upgradeListener = function(req, socket) {
+  if (req.headers['upgrade'] !== 'websocket') {
+    socket.end('HTTP/1.1 400 Bad Request');
+    return;
+  } else {
+    if (bare.routeSocket(req, socket)) return;
+    socket.end();
+  }
+}
+
+const server = http.createServer();
+server.on('request', requestListener);
+server.on('upgrade', upgradeListener);
+
 server.listen(port);
+console.log('Cyclone is running on ', port);

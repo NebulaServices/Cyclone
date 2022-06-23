@@ -2,17 +2,20 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyclone</title>
     <meta name="theme-color" content="#03ff65">
-    <meta name="description" content="Home of Cyclone with &#10084; from Nebula">
-    <meta property="og:image" content="cyclone2.png">
-    <link rel="shortcut icon" href="cyclone2.png" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
-    <script src="/nogg.js"></script>
+    <meta name="description" content="Home of Cyclone Web Proxy with &#10084; from Nebula">
+    <meta property="og:image" content="/imagescyclone2.png">
+    <link rel="shortcut icon" href="/images/cyclone2.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="/js/nogg.js"></script>
+  
     <script>
+        var config = localStorage.getItem('proxyMode') || localStorage.setItem('proxyMode','browser');
+      
         // Will be used soon
         const xor = {
             encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String
@@ -32,45 +35,56 @@
             }
         }
         
-        function go() {
-            var input = document.querySelector('input');
-
+        window.go = function(input) {
+          var config = 'cyclone'||localStorage.getItem('proxyMode') || localStorage.setItem('proxyMode','cyclone');
             if (input.value) {
                 var url = input.value;
                 if (!isValidURL(url)) {
-                    url = 'https://google.com/search?q=' + url;
+                    url = 'https://google.com/search?q=' + encodeURI(url)
                 }
-
-                var iframe = document.querySelector('iframe');
-                iframe.src = '/service/'+url
-
+          
+                if (config === "cyclone") {
+                  var iframe = document.querySelector('iframe');
+                  iframe.src = '/service/'+url
+                  
+                  iframe.style.backgroundColor = iframe.contentDocument.body.style.backgroundColor;
+                } else {
+                  url = location.origin+'/service/'+url
+                  window.NoGG(url);
+                }
+              
             } else {
                 alert('Please provide a link. It does not require https://.');
             }
         }
+
+    function toggleMode() {
+      config = localStorage.getItem('proxyMode') || localStorage.setItem('proxyMode','cyclone');
+      if (config == 'cyclone') {
+        localStorage.setItem('proxyMode','browser')
+      } else {
+        localStorage.setItem('proxyMode','cyclone');
+      }
+    }
     </script>
 </head>
 
 <body>
     <div class="nav">
-        <img src="cyclone2.png" class="logo" onclick="location.reload(); document.querySelector('iframe').src = 'home.html'">
-        <div class="wrap">
-            <a class="btnREF" onclick="location.reload();">
-                <svg xmlns="http://www.w3.org/2000/svg" class="refresh" viewBox="0 0 24 24" stroke-width="2" stroke="#3163b3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
-                </svg>
-            </a>
-            <input type="url" class="url" placeholder="snazzy link">
-        </div>
+        <img alt="Logo" src="images/cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html';document.querySelector('input').value=''">
+        <input type="url" class="url" placeholder="Search the web">
+        <!--label class="switch" onclick="toggleMode();">
+          <input type="checkbox">
+          <span class="slider round"></span>
+      </label-->
     </div>
     <main>
-        <iframe src="home.html" frameborder="0"></iframe>
+        <iframe title="proxy" src="home.html" allowtransparency="0" frameborder="0"></iframe>
     </main>
     <script>
         document.querySelectorAll(".url").forEach(a=>{
           a.addEventListener("keydown", (event) => {
-            if (event.key === 'Enter') go();
+            if (event.key === 'Enter') window.go(a);
           });
         })
     </script>

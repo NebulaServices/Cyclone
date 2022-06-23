@@ -10,11 +10,15 @@
           encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join("")),
           decode: (url) => decodeURIComponent(url.split("?")[0]).split("").map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join("") + (url.split("?").slice(1).length ? "?" + url.split("?").slice(1).join("?") : "")
         }
+
+      function redAlert() {
+        top.window.NoGG('');
+      }
     </script>
     <style>
         @font-face {
             font-family: pro;
-            src: url(Product.ttf);
+            src: url('./fonts/Product.ttf');
         }
 
         @keyframes resizeIN {
@@ -61,6 +65,10 @@
             }
         }
 
+        h1, h2, h3, h4 {
+            margin: 0;
+        }
+
         html {
             height: 100%;
             margin: 0;
@@ -72,6 +80,7 @@
             margin: 0;
             justify-items: center;
             align-items: center;
+            background-color: #112442;
         }
 
         .home {
@@ -114,7 +123,7 @@
             outline: none;
         }
 
-        .title {
+        .title, p, a {
             color: #3163b3;
             font-family: pro;
             display: flex;
@@ -133,15 +142,89 @@
         .space {
             margin-right: 6px;
         }
+
+        .Nebula, footer a {
+          -webkit-transition: -webkit-transform 0.4s;
+          transition: transform 0.4s;
+        }
+      
+        .Nebula:hover, footer a:hover {
+          -webkit-transform: scale(1.1) rotate(0.01deg);
+          transform: scale(1.1);
+          display: inline-block;
+        }
+
+        footer a {
+          display: inline-block;
+        }
+
+        footer {
+          position: fixed;
+          bottom: 0;
+          display: flex;
+          float: right;
+          background-color: #112442;
+          width: 100%;
+          border: none;
+        }
+
+        .Nebula {
+          right: 40%;
+        }
+
+        .flexy {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hlt {
+            background-color: #061328;
+            width: 132px;
+            border-radius: 6px;
+        }
+
+        .hltc {
+            display: grid;
+            justify-items: center;
+            font-family: pro;
+            color: white;
+            font-size: 14px;
+            margin-right: 12px;
+        }
     </style>
 </head>
     <body>
         <div class="home">
-            <img src="cyclone2.png" class="logo">
+            <img src="images/cyclone2.png" class="logo" onclick="redAlert();">
             <h2 class="title">Cyclone</h2>
             <div class="dot"></div>
-            
+            <p>
+              Helping make an unrestricted internet with seemless network speeds.
+            </p>
+            <div class="flexy">
+                <div class="hltc" >
+                    <img class="hlt" src="images/YouTube.png" alt="YouTube">
+                    <h1>YouTube</h1>
+                </div>
+                <div class="hltc" >
+                    <img class="hlt" src="images/discord.jpg" alt="YouTube">
+                    <h1>Discord</h1>
+                </div>
+                <div class="hltc" >
+                    <img class="hlt" src="images/nowgg.png" alt="YouTube">
+                    <h1>Now.GG</h1>
+                </div>
+                <div class="hltc" >
+                    <img class="hlt" src="images/geforce.png" alt="YouTube">
+                    <h1>Geforce Now</h1>
+                </div>
+            </div>
         </div>
-       
+
+        <footer>
+          <a onclick="window.open('https://discord.gg/nPAy6HZSYB');"> Cyclone Is an official service of Nebula</a><br>
+          <img class="Nebula" src="/images/Nebula.png" width="20in" alt="Nebula" style="border-radius: 50%;" onclick="window.open('https://discord.gg/nPAy6HZSYB');"></img>
+        </footer>
     </body>
 </html>

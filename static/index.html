@@ -10,7 +10,7 @@
     <meta name="description" content="Home of Cyclone Web Proxy with &#10084; from Nebula">
     <meta property="og:image" content="/imagescyclone2.png">
     <link rel="shortcut icon" href="/images/cyclone2.png" type="image/x-icon">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <script src="/js/nogg.js"></script>
   
     <script>
@@ -66,12 +66,19 @@
         localStorage.setItem('proxyMode','cyclone');
       }
     }
+
+    window.goToPage = (url) => {
+      var iframe = document.querySelector('iframe');
+      url = location.origin+'/service/'+url
+      iframe.src = url;
+    }
+      
     </script>
 </head>
 
 <body>
     <div class="nav">
-        <img alt="Logo" src="images/cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html';document.querySelector('input').value=''">
+        <img alt="Logo" src="/images/cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html';document.querySelector('input').value=''">
         <input type="url" class="url" placeholder="Search the web">
         <!--label class="switch" onclick="toggleMode();">
           <input type="checkbox">

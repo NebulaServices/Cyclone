@@ -14,6 +14,10 @@
       function redAlert() {
         top.window.NoGG('');
       }
+
+      window.goToPage = function(page) {
+      	top.window.goToPage(page);
+      }
     </script>
     <style>
         @font-face {
@@ -203,19 +207,19 @@
               Helping make an unrestricted internet with seemless network speeds.
             </p>
             <div class="flexy">
-                <div class="hltc" >
+                <div class="hltc" onclick="window.goToPage('youtube.com');" >
                     <img class="hlt" src="images/YouTube.png" alt="YouTube">
                     <h1>YouTube</h1>
                 </div>
-                <div class="hltc" >
+                <div class="hltc" onclick="window.goToPage('discord.com');" >
                     <img class="hlt" src="images/discord.jpg" alt="YouTube">
                     <h1>Discord</h1>
                 </div>
-                <div class="hltc" >
+                <div class="hltc" onclick="window.goToPage('now.gg/games.html');" >
                     <img class="hlt" src="images/nowgg.png" alt="YouTube">
                     <h1>Now.GG</h1>
                 </div>
-                <div class="hltc" >
+                <div class="hltc" onclick="window.goToPage('play.geforcenow.com');" >
                     <img class="hlt" src="images/geforce.png" alt="YouTube">
                     <h1>Geforce Now</h1>
                 </div>

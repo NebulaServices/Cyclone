@@ -1,42 +1,36 @@
 const config = {
-  
+
 }
 
 class Cyclone {
   constructor() {
     this.tmp = location.pathname.split('/service')[1]
-    
-    this.tmp = this.tmp.substring(1, this.tmp.length);
-    let re = /(\b([A-Za-z0-9-]+)\b)/
 
+    this.tmp = this.tmp.substring(1, this.tmp.length);
     this.tmp = this.tmp.replace("http://", '')
     this.tmp = this.tmp.replace("https://", '')
     this.tmp = this.tmp.replace("http:/", '')
     this.tmp = this.tmp.replace("https:/", '')
+
     this.tmp = location.protocol + "//" + this.tmp
 
     document._location = new URL(this.tmp);
-    
-    
+
     this.url = new URL(document._location.href);
 
     this.prefix = location.pathname.split('/')[1]
-    this.bareEndpoint = location.host + "/" + this.prefix 
+    this.bareEndpoint = location.host + "/" + this.prefix
 
     if (this.url.pathname == "/") {
       this.paths = ['/']
     } else {
       this.paths = this.url.pathname.split('/')
     }
-    this.host = 'https://' + this.url.host
+
+    this.host = this.url.host;
 
     this.targetAttrs = ['href', 'src', 'action', 'srcdoc', 'srcset'];
 
-    if (!document.cycloneInjected) {
-      console.log("Cyclone Injected with paths of:", this.paths, this.url.pathname)
-      document.cycloneInjected = true
-    }
-    
     /*const LocationHandler = {
       get(target, prop, reciver) {
         return loc[prop]
@@ -52,10 +46,16 @@ class Cyclone {
     if (!link) {
       link = "";
     }
-    
-    var rewritten;
 
-    if (link.startsWith('https://') || link.startsWith('http://') || link.startsWith('//')) {
+    var rewritten;
+    
+    try {
+      var protocol = new URL(link).protocol
+    } catch {
+      var protocol = 'https:';
+    }
+    
+    if (link.startsWith('https://') || link.startsWith('http://') || link.startsWith('//') || link.startsWith('wss://') || link.startsWith('ws://')) {
       if (link.startsWith('//')) {
         rewritten = 'https:' + link;
       } else {
@@ -69,12 +69,12 @@ class Cyclone {
         }
         let file = link.substr(link.indexOf('.') + 1 + offset, link.length)
 
-        rewritten = this.url.hostname + file
+        rewritten = this.url.hostname + '/' + file;
       } else {
-        if (link.startsWith('/')) {
-          rewritten = this.host + link
+        if (link.startsWith('/') || link.startsWith("/")) {
+          rewritten = protocol + "//" + this.host + link;
         } else {
-          rewritten = this.host + '/' + link;
+          rewritten = protocol + "//" + this.host + '/' + link;
         }
       }
     }
@@ -87,12 +87,18 @@ class Cyclone {
       }
     }
 
-    
+
     if (needstowrite) {
-      rewritten = location.protocol + '//' + this.bareEndpoint + '/' + rewritten
+      rewritten = protocol + '//' + this.bareEndpoint + '/' + rewritten
       return rewritten;
     } else {
-      return link;
+      if (link.startsWith('javascript:')) {
+        var jsR = new JavaScriptRewriter();
+        let js = jsR.rewriteJavascript(link);
+        return js;
+      } else {
+        return link;
+      }
     }
   }
 
@@ -112,40 +118,96 @@ class Cyclone {
 
 // CSS
 class CSSRewriter extends Cyclone {
-  rewriteCSS(tag) {
-    var styles = window.getComputedStyle(tag)
-    var _values = styles['_values']
+  constructor(proxy) {
+    super()
+    this.proxy = proxy;
+  }
 
-    var prop = styles.getPropertyValue('background-image')
-    var name = "background-image"
+  getElementStyleText(element) {
+    /*
+    var styleSheet = document.styleSheets[1];
 
-    if (prop == "") {
-      if (!styles.getPropertyValue('background') == "") {
-        prop = styles.getPropertyValue('background')
-        name = "background"
+    for (var i = 0; i < styleSheet.rules.length; i++) {
+      var rule = styleSheet.rules[i];
+
+      //Different selectors
+      var id = "#" + element.id
+      if (id == "#") {
+        id = null;
+      }
+      var className = "." + element.className
+      if (className == ".") {
+        className = null;
+      }
+      var nodeType = element.nodeType;
+
+      var elementSelector = {
+        'id': id,
+        'class': className,
+        'element': nodeType,
+      }
+
+      var selectorText = styleSheet.rules[i].selectorText;
+
+      for (var i = 0; i < Object.keys(elementSelector); i++) {
+        var key = Object.keys(elementSelector)[i];
+        var dat = elementSelector[key];
+
+        if (selectorText == dat) {
+          return 
+        }
       }
     }
+    */
 
-    if (prop.includes("url(")) {
-      var start = prop.indexOf('url(') + 4
-      var end = prop.indexOf(')') - 4
-
-      var url = prop.substring(start, end)
-      url = this.rewriteUrl(url)
-      console.log(name)
-      tag.style[name] = url
-    }
+    return element.style;
   }
-}
+
+  rewrite(data, context) {
+    const cont = context;
+    try { try { cont.Url = new URL(ctx.context.url.replace(ctx.prefix,'')) } catch { cont.Url = new URL(ctx.rewriteUrl(ctx.context.url.replace(ctx.prefix,''))) } } catch { return data }
+    return data.replace(/url\("(.*?)"\)/gi, str => { var url = str.replace(/url\("(.*?)"\)/gi, '$1'); return `url("${context.rewriteUrl(url)}")`; }).replace(/url\('(.*?)'\)/gi, str => { var url = str.replace(/url\('(.*?)'\)/gi, '$1'); return `url('${context.rewriteUrl(url)}')`; }).replace(/url\((.*?)\)/gi, str => { var url = str.replace(/url\((.*?)\)/gi, '$1'); if (url.startsWith(`"`) || url.startsWith(`'`)) return str; return `url("${context.rewriteUrl(url)}")`; }).replace(/@import (.*?)"(.*?)";/gi, str => { var url = str.replace(/@import (.*?)"(.*?)";/, '$2'); return `@import "${context.rewriteUrl(url)}";` }).replace(/@import (.*?)'(.*?)';/gi, str => { var url = str.replace(/@import (.*?)'(.*?)';/, '$2'); return `@import '${context.rewriteUrl(url)}';` })
+  }
+} // thanks to Rhodium by EnderKingJ for this script :D 
+
+// window.document.domain
+Object.defineProperty(window.document, 'domain', {
+  get() {
+    return cyclone.url.hostname
+  },
+  set(val) {
+    return val
+  }
+})
 
 // JS
 
 class JavaScriptRewriter extends Cyclone {
+  constructor() {
+    super();
+    //Proxied methods
+    this.setAttrCy = HTMLElement.prototype.setAttribute;
+    this.getAttrCy = HTMLElement.prototype.getAttribute;
+  }
+
   rewriteJavascript(js) {
     var javascript = js.replace('window.location', 'document._dlocation')
     javascript = javascript.replace('document.location', 'document._dlocation')
     javascript = javascript.replace('location.', 'document._location.')
     return javascript
+  }
+
+  setAttribute(attr, value, mode) {
+    if (mode) {
+      this.setAttrCy.call(this, attr);
+    } else {
+      var url = attr
+      if (this.targetAttrs.includes(attr)) {
+        url = this.rewriteUrl(url);
+      }
+
+      this.setAttrCy.call(this, attr);
+    }
   }
 }
 
@@ -153,44 +215,73 @@ class JavaScriptRewriter extends Cyclone {
 class HTMLRewriter extends Cyclone {
   rewriteElement(element) {
     var targetAttrs = this.targetAttrs;
-    const attrs = [...element.attributes].reduce((attrs, attribute) => {
-      attrs[attribute.name] = attribute.value;
-      return attrs;
-    }, {});
+    var attrs;
+    
+    try {
+      attrs = [...element.attributes || {}].reduce((attrs, attribute) => {
+        attrs[attribute.name] = attribute.value;
+        return attrs;
+      }, {});
+      
+    } catch {
+      attrs = {};
+    }
+
 
     var elementAttributes = [];
 
     for (var i = 0; i < targetAttrs.length; i++) {
       var attr = targetAttrs[i]
-      var attrName = Object.keys(attrs)[i];
+      var jsRewrite = new JavaScriptRewriter();
+
+      if (attr) {
+        var attrName = Object.keys(attrs)[i];
+      }
+
+      var toRewrite = true;
+
       var data = {
         name: attr,
         value: element.getAttribute('data-origin-' + attr) || element.getAttribute(attr)
       }
 
-      if (data.value) {
-        elementAttributes.push(data);
-      }
-
       if (element.nonce) {
         element.setAttribute('nononce', element.nonce)
         element.removeAttribute('nonce')
+        toRewrite = false;
       }
       if (element.integrity) {
         element.setAttribute('nointegrity', element.integrity)
-        element.removeAttribute('integrity')
+        element.removeAttribute('integrity');
+        toRewrite = false;
       }
 
       if (element.tagName == "script") {
         if (!element.getAttribute('src')) {
-          var jsRewrite = new JavaScriptRewriter();
           element.innerHTML = jsRewrite.rewriteJavascript(element.innerHTML)
+          toRewrite = false;
         }
       }
 
+      if (element.getAttribute("http-equiv")) {
+        element.setAttribute('no-http-equiv', element.getAttribute('http-equiv'))
+        element.removeAttribute('http-equiv');
+        toRewrite = false;
+      }
+
+      if (element.tagName == "style") {
+        element.setAttribute('type','text/css');
+      }
+      
+      if (data.value && toRewrite) {
+        elementAttributes.push(data);
+      }
+
       // Css
-      var cssRewrite = new CSSRewriter();
-      cssRewrite.rewriteCSS(element)
+      var cssParser = new CSSRewriter();
+      var css = (cssParser.rewrite(cssParser.getElementStyleText(element)))
+      element.stye = css;
+      //45% done :D
     }
 
     for (var i = 0; i < elementAttributes.length; i++) {
@@ -218,7 +309,7 @@ class HTMLRewriter extends Cyclone {
   }
 
   rewriteiFrame(iframe) {
-    var frameDoc = (iframe.contentWindow || iframe.contentDocument || iframe.document);
+    var frameDoc = (iframe.contentDocument);
 
     let tags = frameDoc.querySelectorAll('*')
 
@@ -257,7 +348,7 @@ var CWOriginal = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.protot
 Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
   get() {
     var iWindow = CWOriginal.get.call(this)
-    cyclone.rewriteiFrame(iWindow)
+    htmlRewriter.rewriteiFrame(iWindow)
 
     return iWindow
   },
@@ -268,32 +359,50 @@ Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
 
 
 const open = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-  url = cyclone.rewriteUrl(url)
+XMLHttpRequest.prototype.open = function(...args) {
+  args[0] = cyclone.rewriteUrl(url)
 
   return open.call(this, method, url, ...rest);
 };
 
-/*
+const oSend = XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.open = function(body) {
+
+  return open.call(this, body);
+};
+
 var oPush = window.history.pushState;
+var oPlace = window.history.replaceState;
+
+function CycloneStates(dat, unused, url) {
+  var cyUrl = cyclone.rewriteUrl(url);
+
+  oPush.call(this, dat, unused, cyUrl);
+}
 
 window.history.pushState = CycloneStates
 window.history.replaceState = CycloneStates
 history.pushState = CycloneStates
-history.replaceState = CycloneStates */
+history.replaceState = CycloneStates
 
 const OriginalWebsocket = window.WebSocket
 const ProxiedWebSocket = function() {
+  var url = cyclone.rewriteUrl(arguments[0])
+  console.log(url);
+  arguments[0] = "";
+  
   const ws = new OriginalWebsocket(...arguments)
+  console.log("Intercepting web socket", arguments);
 
   const originalAddEventListener = ws.addEventListener
+
   const proxiedAddEventListener = function() {
     if (arguments[0] === "message") {
       const cb = arguments[1]
       arguments[1] = function() {
         var origin = arguments[0].origin
         arguments[0].origin = cyclone.rewriteUrl(origin);
-
+        console.log(arguments)
         return cb.apply(this, arguments)
       }
     }
@@ -321,28 +430,27 @@ function openNewTab(url, target, features) {
   url = cyclone.rewriteUrl(url)
   nwtb(url, target, features)
 }
-window.open = openNewTab
-/* 
- setInterval(function() {
-   htmlRewriter.rewriteDocument();
- }, 10000)
- */
+
+window.open = openNewTab;
 
 htmlRewriter.rewriteDocument();
 
 let mutationE = new MutationObserver((mutationList, observer) => {
   for (const mutation of mutationList) {
     mutation.addedNodes.forEach(node => {
-      if (node.innerHTML != '<script preload="" type="module" src="https://localhost:443/cyclone.js"></script>') {
-        htmlRewriter.rewriteElement(node)
-      }
+      htmlRewriter.rewriteElement(node);
     });
-
   }
 }).observe(document, {
   childList: true,
   subtree: true
 })
+
+window.onload = function() {
+  setInterval(function(){  
+    htmlRewriter.rewriteDocument();
+  },1000)
+}
 
 //For intercepting all requests
 if (!document.serviceWorkerRegistered) {

@@ -3,7 +3,7 @@
 <img src="https://ant-network.net/images/cyclone2.png" width="150px"></img><br>
 
   <p style="font-size:12px;">Helping make an unrestricted internet with seemless network speeds.</p>
-  <p style="font-size:12px;">Cyclone is an official flagship of Nebula Services</p>
+  <p style="font-size:12px;">Cyclone is an official flagship of Nebula Services. Written by System32#9874</p>
 
 Technologies used:
 

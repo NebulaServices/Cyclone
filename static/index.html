@@ -5,17 +5,31 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyclone</title>
+    <title>Google Docs</title>
     <meta name="theme-color" content="#03ff65">
     <meta name="description" content="Home of Cyclone Web Proxy with &#10084; from Nebula">
     <meta property="og:image" content="/imagescyclone2.png">
-    <link rel="shortcut icon" href="/images/cyclone2.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://docs.google.com/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/css/style.css">
     <script src="/js/nogg.js"></script>
-  
+    <script src="/js/cryptojs.min.js"></script>
+    <!--script src="/wasmlytics.js" defer></script-->
+
     <script>
         var config = localStorage.getItem('proxyMode') || localStorage.setItem('proxyMode','browser');
-      
+        
+        const encryptWithAES = (text) => {
+          const passphrase = '123';
+          return CryptoJS.AES.encrypt(text, passphrase).toString();
+        };
+        
+        const decryptWithAES = (ciphertext) => {
+          const passphrase = '123';
+          const bytes = CryptoJS.AES.decrypt(ciphertext, passphrase);
+          const originalText = bytes.toString(CryptoJS.enc.Utf8);
+          return originalText;
+        };
+
         // Will be used soon
         const xor = {
             encode: (url) => encodeURIComponent(url.toString().split("").map((char, ind) => ind % 2 ? String
@@ -42,9 +56,10 @@
                 if (!isValidURL(url)) {
                     url = 'https://google.com/search?q=' + encodeURI(url)
                 }
-          
+
+                //url = encryptWithAES(url);
                 if (config === "cyclone") {
-                  var iframe = document.querySelector('iframe');
+                  var iframe = document.querySelector('main iframe');
                   iframe.src = '/service/'+url
                   
                   iframe.style.backgroundColor = iframe.contentDocument.body.style.backgroundColor;
@@ -72,11 +87,35 @@
       url = location.origin+'/service/'+url
       iframe.src = url;
     }
+
+      window.alert = (message, color) => {
+  if (!color) color = "red";
+  var alertBox = document.createElement("div");
+
+  alertBox.style.backgroundColor = color;
+  alertBox.innerHTML = `<p>${message}</p>`;
+  alertBox.className = "alert";
+
+  const dissapear = (e,t) => {
+    e = t || e;
+
+    e.remove();
+  };
+
+      setTimeout(()=>{dissapear("",alertBox)},5000);
+
+  alertBox.addEventListener("click", dissapear);
+
+  document.querySelector(".alertBox").appendChild(alertBox);
+}
+     // window.onload=()=>{window.alert("Cyclone collects your data for analyitcal purposes to help improve your expirence")};
       
     </script>
 </head>
 
 <body>
+  <div class="alertBox">
+  </div>
     <div class="nav">
         <img alt="Logo" src="/images/cyclone2.png" class="logo" onclick="document.querySelector('iframe').src = 'home.html';document.querySelector('input').value=''">
         <input type="url" class="url" placeholder="Search the web">

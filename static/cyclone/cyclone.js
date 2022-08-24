@@ -2,24 +2,36 @@ const config = {
 
 }
 
+const encryptWithAES = (text) => {
+  const passphrase = '123';
+  return CryptoJS.AES.encrypt(text, passphrase).toString();
+};
+
+const decryptWithAES = (ciphertext) => {
+  const passphrase = '123';
+  const bytes = CryptoJS.AES.decrypt(ciphertext, passphrase);
+  const originalText = bytes.toString(CryptoJS.enc.Utf8);
+  return originalText;
+};
+
 class Cyclone {
   constructor() {
-    this.tmp = location.pathname.split('/service')[1]
+    this.tmp = (location.pathname.split('/service/')[1]);
 
-    this.tmp = this.tmp.substring(1, this.tmp.length);
+    this.tmp = this.tmp.substring(0, this.tmp.length);
     this.tmp = this.tmp.replace("http://", '')
     this.tmp = this.tmp.replace("https://", '')
     this.tmp = this.tmp.replace("http:/", '')
     this.tmp = this.tmp.replace("https:/", '')
     this.tmp = location.protocol + "//" + this.tmp
 
-    document._location = new URL(this.tmp);
+    document._loc8tion = new URL(this.tmp);
     var l = new URL(this.tmp);
 
-    this.url = new URL(document._location.href);
+    this.url = new URL(document._loc8tion.href);
 
-    this.prefix = location.pathname.split('/')[1]
-    this.bareEndpoint = location.host + "/" + this.prefix
+    this.prefix = (location.pathname).split('/')[1];
+    this.bareEndpoint = location.host + "/" + this.prefix;
 
     if (this.url.pathname == "/") {
       this.paths = ['/']
@@ -45,6 +57,8 @@ class Cyclone {
     }
 
     //const locProxy = new Proxy(document.location, LocationHandler)
+    const _location = l;
+    document._location = l;
     Object.defineProperty(document, '_location', {
       writable: true,
       configurable: true,
@@ -66,34 +80,37 @@ class Cyclone {
   }
 
   rewriteUrl(link) {
-    if (!link) {
-      link = "";
-    }
-
     var rewritten;
-
-    if (link.startsWith('https://') || link.startsWith('http://') || link.startsWith('//')) {
-      if (link.startsWith('//')) {
-        rewritten = 'https:' + link;
-      } else {
-        rewritten = link;
-      };
-    } else {
-      if (link.startsWith('.')) {
-        let offset = 1;
-        if (link.startsWith('..')) {
-          offset = 2;
-        }
-        let file = link.substr(link.indexOf('.') + 1 + offset, link.length)
-
-        rewritten = this.url.hostname + file
-      } else {
-        if (link.startsWith('/')) {
-          rewritten = this.host + link
+    try {
+      if (link.startsWith('https://') || link.startsWith('http://') || link.startsWith('//')) {
+        if (link.startsWith('//')) {
+          rewritten = 'https:' + link;
         } else {
-          rewritten = this.host + '/' + link;
+          rewritten = link;
+        };
+      } else {
+        if (link.startsWith('.')) {
+          let offset = 1;
+          if (link.startsWith('..')) {
+            offset = 2;
+          }
+          let file = link.substr(link.indexOf('.') + 1 + offset, link.length)
+
+          rewritten = this.url.hostname + file
+        } else {
+          if (link.startsWith('/')) {
+            rewritten = this.host + link
+          } else {
+            rewritten = this.host + '/' + link;
+          }
         }
       }
+    } catch {
+      rewritten = this.host + '/' + link;
+    }
+
+    if (!link) {
+      return false;
     }
 
     var exceptions = ['about:', 'mailto:', 'javascript:', 'data:']
@@ -107,7 +124,7 @@ class Cyclone {
 
     if (needstowrite) {
       rewritten = location.protocol + '//' + this.bareEndpoint + '/' + rewritten
-      return rewritten;
+      return (rewritten);
     } else {
       return link;
     }
@@ -129,8 +146,8 @@ class Cyclone {
 
 // CSS
 class CSSRewriter extends Cyclone {
-  rewriteCSS(tag) {
-    var styles = window.getComputedStyle(tag)
+  rewriteCSSOLD(tag) {
+    var styles = getComputedStyle(tag)
     var _values = styles['_values']
 
     var prop = styles.getPropertyValue('background-image')
@@ -139,28 +156,47 @@ class CSSRewriter extends Cyclone {
     if (prop == "") {
       if (!styles.getPropertyValue('background') == "") {
         prop = styles.getPropertyValue('background')
-        name = "background"
+        name = "background";
       } else {
         name = "";
         prop = "";
       }
     }
 
-    if (prop.includes("url(")) {
-      var start = prop.indexOf('url(') + 4
-      var end = prop.indexOf(')') - 4
+    if (prop.includes(`url(`)) {
+      var start = prop.indexOf('url(') + 5;
+      var end = prop.indexOf(')') - 1;
 
-      var url = prop.substring(start, end).toString('ascii');
+      var link = prop.substring(start, end)
 
-      if (url.startsWith(location.origin)) {
-        url = url.split(location.origin)
-      } else {
-        url = url.slice(url.indexOf(location.origin));
+      if (link.startsWith(location.origin)) {
+        link = link.replace(location.origin, '');
       }
 
-      url = this.rewriteUrl(url)
-      tag.style[name] = url
+      link = this.rewriteUrl(link);
+
+      tag.style[name] = link;
     }
+  }
+
+  getUrlObjs(string) {
+    var regExp = /url\((?:\\["\\]|[^\n"\\])*\)/g;
+    return [...string.matchAll(regExp)];
+  }
+
+  rewriteCSS(tag) {
+    var css = ``;
+    var objs = this.getUrlObjs(css);
+    objs.forEach(x => {
+      var cssValue = x[0];
+      var regExp = /\((?:\\["\\]|[^\n"\\])*\)/g;
+      var uriWP = cssValue.match(regExp)[0];
+      var url = uriWP.substring(1, uriWP.length - 1);
+
+      css = css.replace(url, "/service/" + url);
+    })
+
+    return css;
   }
 }
 
@@ -176,10 +212,9 @@ class JavaScriptRewriter extends Cyclone {
   }
 
   rewriteJavascript(js) {
-    var javascript = js.replace(/window\.location/g, 'window._dlocation')
-    javascript = javascript.replace(/document\.location/g, 'document._dlocation')
-    javascript = javascript.replace(/location\./g, '_location.')
-    return javascript
+    var javascript = js.replace(/"[^"]*"|(\b(?<=(?<!\.)(document\.|window\.|))location\b)/g, "_location");
+
+    return javascript;
   }
 
   setAttribute(attr, value, mode) {
@@ -230,19 +265,19 @@ class HTMLRewriter extends Cyclone {
     if (element.__proto__.getAttribute) {
       var jsWrite = new JavaScriptRewriter();
       var elementAttributes = [];
-  
+
       for (var i = 0; i < targetAttrs.length; i++) {
         var attr = targetAttrs[i]
         var attrName = Object.keys(attrs)[i];
         var data = {
           name: attr,
           value: element.getAttribute('data-origin-' + attr, 'cyclone') || element.getAttribute(attr, 'cyclone')
-        }
-  
+        };
+
         if (data.value) {
           elementAttributes.push(data);
         }
-  
+
         if (element.nonce) {
           element.setAttribute('nononce', element.nonce, '')
           element.removeAttribute('nonce')
@@ -251,29 +286,29 @@ class HTMLRewriter extends Cyclone {
           element.setAttribute('nointegrity', element.integrity, '')
           element.removeAttribute('integrity')
         }
-  
+
         if (element.tagName == "script") {
           if (!element.getAttribute('src')) {
             var jsRewrite = new JavaScriptRewriter();
             element.innerHTML = jsRewrite.rewriteJavascript(element.innerHTML)
           }
         }
-  
+
         // Css
         var cssRewrite = new CSSRewriter();
         cssRewrite.rewriteCSS(element)
       }
-  
+
       for (var i = 0; i < elementAttributes.length; i++) {
         var attr = elementAttributes[i];
         var attrName = attr.name;
         var value = attr.value;
-  
+
         var bareValue = this.rewriteUrl(value);
         if (attrName == "srcset" || attrName == 'srcset') {
           bareValue = this.rewriteSrcset(value);
         }
-  
+
         element.setAttribute(attrName, bareValue);
         element.setAttribute("data-origin-" + attrName, value);
       }
@@ -299,6 +334,15 @@ class HTMLRewriter extends Cyclone {
       this.rewriteElement(tag)
     }
   }
+
+  rewriteDocObject(docObj) {
+    var docElements = docObj.querySelectorAll('*');
+    for (var i = 0; i < docElements.length; i++) {
+      var element = docElements[i];
+
+      this.rewriteElement(element)
+    }
+  }
 }
 
 const cyclone = new Cyclone();
@@ -316,19 +360,18 @@ window.fetch = async (...args) => {
 
 const MessageIntercept = window.postMessage;
 const messageInterceptionFunc = (...args) => {
-  let [message, target, config] = args;
+  let [message, target, transfer] = args;
   target = cyclone.rewriteUrl(target);
 
-  const response = MessageIntercept(message, target, config);
-  console.log(response);
+  const response = MessageIntercept(message, target, transfer);
+  //console.log(MessageIntercept(message, target, config));
   return response;
 }
 
 Object.defineProperty(window, 'postMessage', {
   writable: false,
   value: messageInterceptionFunc
-}
-)
+})
 
 var CWOriginal = Object.getOwnPropertyDescriptor(window.HTMLIFrameElement.prototype, 'contentWindow')
 
@@ -344,6 +387,15 @@ Object.defineProperty(window.HTMLIFrameElement.prototype, 'contentWindow', {
   }
 })
 
+const overrideEval = eval;
+const evalProxy = (x) => {
+  var jsRewrite = new JavaScriptRewriter();
+  var rewritten = jsRewrite.rewriteJavascript(x);
+  console.log(rewritten);
+  return overrideEval(rewritten);
+}
+
+eval = evalProxy;
 
 const open = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function(method, url, ...rest) {
@@ -399,6 +451,21 @@ const ProxiedWebSocket = function() {
 
 window.WebSocket = ProxiedWebSocket;
 
+// Request
+var requestProxyHandler = {
+  get(target, prop, receiver) {
+    console.log(target);
+    if (prop == "url") {
+      return 'the j';
+    }
+
+    return Reflect.get(...arguments);
+  }
+}
+
+Request.prototype = new Proxy(Request.prototype, requestProxyHandler);
+Request.__proto__ = new Proxy(Request.__proto__, requestProxyHandler);
+
 const nwtb = window.open
 
 function openNewTab(url, target, features) {
@@ -412,10 +479,11 @@ window.onload = function() {
   for (var i = 0; i < 50; i++) {
     setTimeout(() => {
       htmlRewriter.rewriteDocument();
-    }, 500)
+    }, 10)
   }
 }
 
+/*
 let mutationE = new MutationObserver((mutationList, observer) => {
   for (const mutation of mutationList) {
     mutation.addedNodes.forEach(node => {
@@ -425,7 +493,7 @@ let mutationE = new MutationObserver((mutationList, observer) => {
 }).observe(document, {
   childList: true,
   subtree: true
-})
+})*/
 
 //For intercepting all requests
 if (!document.serviceWorkerRegistered) {

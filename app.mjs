@@ -1,7 +1,8 @@
 import http from 'http';
 import * as fs from 'fs';
-import * as bare from './static/js/customBare.mjs';
+import * as bare from './customBare.mjs';
 import nodeStatic from 'node-static';
+import * as analytics from '@enderkingj/analytics';
 
 const serve = new nodeStatic.Server('./static', {
   cache: 0,
@@ -12,6 +13,9 @@ const __dirname = process.cwd();
 const port = process.env.PORT || 5000 ;
 
 const requestListener = function(req, res) {
+  
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  
   if (bare.isBare(req, res)) {
     bare.route(req,res);
   } else {

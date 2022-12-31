@@ -1,8 +1,7 @@
 # ⚡ Cyclone ⚡
 
   Helping make an unrestricted internet with seemless network speeds.
- ## Cyclone EOL
-Cyclone v5 is the final version of Cyclone. Feel free to Fork this project and continue working on it <3 Thank you to <a href='https://github.com/SmartCoder3000'>System32/Lil Neutron</a> and <a href='https://github.com/NovaAppsInc'> NovaAppsInc</a> for their hard work. If you're interested in some similar projects, I suggest you check out Osana or DIP
+ 
 
 ## Technologies used:
 
